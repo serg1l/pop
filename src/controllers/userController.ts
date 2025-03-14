@@ -64,6 +64,15 @@ class userController {
   };
 
   async loginUser(req: Request, res: Response) {
+
+    if (res.locals.user) {
+      res.status(201).json({
+        message: "logged in via json web token!",
+        user: res.locals.user
+      }).end();
+      return;
+    };
+
     try {
       const { password, email, name } = loginVal.parse(req.body);
       const userExist = await User.findOne({
@@ -116,8 +125,36 @@ class userController {
     return;
   };
 
-  async getMyUser() {
+  async getMyUser(req: Request, res: Response) {
 
+    if (!res.locals.user) {
+      res.status(401).json({
+        message: "log in first to get your information."
+      }).end();
+      return;
+    };
+
+    try {
+      const id = req.params.id;
+      const user = await User.findById(id)
+        .select({
+          password: 0,
+          role: 0,
+          __v: 0,
+          _id: 0
+        }).exec();
+
+      res.status(201).json({
+        message: "here's your info",
+        user: user
+      });
+
+    } catch (error) {
+      res.status(500).json({
+        message: "error fetching user data from the database, please try again later"
+      });
+    };
+    return;
   };
 };
 

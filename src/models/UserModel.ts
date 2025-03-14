@@ -1,5 +1,6 @@
 import { Schema, model } from "mongoose";
 import bcrypt from "bcryptjs";
+
 export interface IUser{
   _id: string;
   name: string;
@@ -68,7 +69,7 @@ userModel.pre("save", async function(next){
 });
 
 export async function comparePassword(candidatePassword: string, hashedPassword: string ){
-  return await bcrypt.compare(candidatePassword, hashedPassword)
+  return bcrypt.compare(candidatePassword, hashedPassword)
 };
 
 const User = model<IUser>("user", userModel, "users")
