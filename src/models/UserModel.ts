@@ -67,5 +67,9 @@ userModel.pre("save", async function(next){
   next();
 });
 
+export async function comparePassword(candidatePassword: string, hashedPassword: string ){
+  return await bcrypt.compare(candidatePassword, hashedPassword)
+};
+
 const User = model<IUser>("user", userModel, "users")
 export default User;
