@@ -1,8 +1,9 @@
 import User, { comparePassword, IUser } from "../models/UserModel.js";
-import { Request, Response } from "express";
+import { request, Request, Response } from "express";
 import registerVal from "../utils/registerValidation.js";
 import loginVal from "../utils/loginValidation.js";
 import generateToken from "../utils/generateToken.js";
+import login from "../utils/loginRedirection.js";
 
 class userController {
   async createUser(req: Request, res: Response) {
@@ -55,12 +56,12 @@ class userController {
     return;
   };
 
-  async deleteUser() {
-
+  async deleteUser(req: Request, res: Response) {
+    if(!login(res)) return;
   };
 
-  async updateUser() {
-
+  async updateUser(req: Request, res: Response) {
+    if(!login(res)) return;
   };
 
   async loginUser(req: Request, res: Response) {
@@ -126,13 +127,7 @@ class userController {
   };
 
   async getMyUser(req: Request, res: Response) {
-
-    if (!res.locals.user) {
-      res.status(401).json({
-        message: "log in first to get your information."
-      }).end();
-      return;
-    };
+    if(!login(res)) return;
 
     try {
       const id = req.params.id;
@@ -149,12 +144,45 @@ class userController {
         user: user
       });
 
-    } catch (error) {
+    }catch (error) {
       res.status(500).json({
         message: "error fetching user data from the database, please try again later"
       });
     };
     return;
+  };
+
+  async listUsers(req: Request, res: Response){
+    if(!login(res)) return;
+
+    const page = parseInt(req.params.page, 10) || 0;
+    const perPage = 4;
+    const query = { $ne: res.locals.user._id };
+
+    try{
+      const [count, users] = await Promise.all([
+
+        User.find({ _id: query })
+        .estimatedDocumentCount(),
+
+        User.find({ _id: query })
+          .sort({ name: "asc" })
+          .limit(perPage)
+          .skip(perPage * page)
+          .exec()
+      ]);
+
+      res.status(201).send({
+        users: users,
+        message: "users sended.",
+        pages: Math.ceil(count / perPage)
+      }).end();
+    }catch(error){
+      res.status(500).send({
+        message: "failed to fetch user from the database, please try later"
+      }).end();
+    };
+  return;
   };
 };
 

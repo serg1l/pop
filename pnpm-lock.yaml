@@ -44,9 +44,6 @@ importers:
       mongoose:
         specifier: ^8.12.1
         version: 8.12.1
-      mongoose-pagination:
-        specifier: ^1.0.0
-        version: 1.0.0
       multer:
         specifier: 1.4.5-lts.1
         version: 1.4.5-lts.1
@@ -415,9 +412,6 @@ packages:
         optional: true
       socks:
         optional: true
-
-  mongoose-pagination@1.0.0:
-    resolution: {integrity: sha512-qG3iWh+z8FpsDqnCIKK9P3k642lUguLjj9LXy7d6TW5TTBfvOC1SRxxVsDMwoSh1lhEp9j6lFTGQwg0VgNx/Ng==}
 
   mongoose@8.12.1:
     resolution: {integrity: sha512-UW22y8QFVYmrb36hm8cGncfn4ARc/XsYWQwRTaj0gxtQk1rDuhzDO1eBantS+hTTatfAIS96LlRCJrcNHvW5+Q==}
@@ -968,19 +962,6 @@ snapshots:
       '@mongodb-js/saslprep': 1.2.0
       bson: 6.10.3
       mongodb-connection-string-url: 3.0.2
-
-  mongoose-pagination@1.0.0:
-    dependencies:
-      mongoose: 8.12.1
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - gcp-metadata
-      - kerberos
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
 
   mongoose@8.12.1:
     dependencies:

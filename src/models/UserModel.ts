@@ -72,5 +72,5 @@ export async function comparePassword(candidatePassword: string, hashedPassword:
   return bcrypt.compare(candidatePassword, hashedPassword)
 };
 
-const User = model<IUser>("user", userModel, "users")
+const User = model<IUser>("user", userModel, "users");
 export default User;

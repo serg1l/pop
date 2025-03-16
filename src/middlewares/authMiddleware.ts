@@ -2,10 +2,11 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
 export default function verifyTokenAuth(req: Request, res: Response, next: NextFunction) {
+  const token = req.headers.authorization;
+
   try {
-    const token = req.headers.authorization;
     if (!token) {
-      console.log("new login");
+      console.log("no token");
       next();
       return;
     };
@@ -16,7 +17,6 @@ export default function verifyTokenAuth(req: Request, res: Response, next: NextF
     res.locals.user = payload;
     next();
     return;
-
   } catch (error) {
     console.log((<any>error).message);
     next();
