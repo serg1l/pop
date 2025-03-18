@@ -4,6 +4,7 @@ import registerVal from "../utils/registerValidation.js";
 import loginVal from "../utils/loginValidation.js";
 import generateToken from "../utils/generateToken.js";
 import login from "../utils/loginRedirection.js";
+import updateVal from "../utils/updateValidation.js";
 
 class userController {
   async createUser(req: Request, res: Response) {
@@ -57,11 +58,57 @@ class userController {
   };
 
   async deleteUser(req: Request, res: Response) {
-    if(!login(res)) return;
+    if (!login(res)) return;
+
+    try {
+
+    } catch (error) {
+
+    };
+
   };
 
   async updateUser(req: Request, res: Response) {
-    if(!login(res)) return;
+    if (!login(res)) return;
+
+    const updateValues = req.body;
+    const user = res.locals.user;
+
+    try {
+      if (!Object.keys(updateValues)) throw new Error("empty");
+
+      const parsedValues = updateVal.parse(updateValues);
+      const userExist = await User.findOne({ $or: [{ name: parsedValues.name }, { email: parsedValues.email }] });
+      if (userExist) throw new Error("exist");
+
+      const updated = await User.findByIdAndUpdate({ _id: user._id }, parsedValues, { new: true });
+
+      res.status(201).send({
+        message: "updated successfully",
+        newUser: updated
+      });
+
+    } catch (error) {
+      const message = (<any>error).message;
+      if ( message === "empty") {
+        res.status(401).send({
+          message: "nothing sent to change"
+        }).end();
+        return;
+      };
+
+      if( message === "exist"){
+        res.status(402).send({
+          message: "this user exist, try other name/email"
+        }).end();
+        return;
+      };
+
+      res.status(500).send({
+        message: "failed to update user, please try again later"
+      });
+      console.log(error);
+    };
   };
 
   async loginUser(req: Request, res: Response) {
@@ -127,7 +174,7 @@ class userController {
   };
 
   async getMyUser(req: Request, res: Response) {
-    if(!login(res)) return;
+    if (!login(res)) return;
 
     try {
       const id = req.params.id;
@@ -144,7 +191,7 @@ class userController {
         user: user
       });
 
-    }catch (error) {
+    } catch (error) {
       res.status(500).json({
         message: "error fetching user data from the database, please try again later"
       });
@@ -152,18 +199,18 @@ class userController {
     return;
   };
 
-  async listUsers(req: Request, res: Response){
-    if(!login(res)) return;
+  async listUsers(req: Request, res: Response) {
+    if (!login(res)) return;
 
     const page = parseInt(req.params.page, 10) || 0;
     const perPage = 4;
     const query = { $ne: res.locals.user._id };
 
-    try{
+    try {
       const [count, users] = await Promise.all([
 
         User.find({ _id: query })
-        .estimatedDocumentCount(),
+          .estimatedDocumentCount(),
 
         User.find({ _id: query })
           .sort({ name: "asc" })
@@ -177,12 +224,12 @@ class userController {
         message: "users sended.",
         pages: Math.ceil(count / perPage)
       }).end();
-    }catch(error){
+    } catch (error) {
       res.status(500).send({
         message: "failed to fetch user from the database, please try later"
       }).end();
     };
-  return;
+    return;
   };
 };
 

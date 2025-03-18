@@ -7,7 +7,7 @@ userRouter.get("/users/:page?", verifyTokenAuth, userController.listUsers);
 userRouter.get("/me/:id", verifyTokenAuth, userController.getMyUser);
 userRouter.post("/" ,userController.createUser);
 userRouter.post("/login", verifyTokenAuth, userController.loginUser);
-userRouter.put("/", verifyTokenAuth);
+userRouter.patch("/", verifyTokenAuth, userController.updateUser);
 userRouter.delete("/", verifyTokenAuth);
 
 export default userRouter;
