@@ -5,6 +5,8 @@ import loginVal from "../utils/loginValidation.js";
 import generateToken from "../utils/generateToken.js";
 import login from "../utils/loginRedirection.js";
 import updateVal from "../utils/updateValidation.js";
+import bcrypt from "bcryptjs";
+import { parse } from "dotenv";
 
 class userController {
   async createUser(req: Request, res: Response) {
@@ -79,10 +81,18 @@ class userController {
 
       const parsedValues = updateVal.parse(updateValues);
       const userExist = await User.findOne({ $or: [{ name: parsedValues.name }, { email: parsedValues.email }] });
-      if (userExist) throw new Error("exist");
+
+      if (userExist && (user.name !== userExist.name || user.email !== userExist.email)) {
+        throw new Error("exist");
+      };
+
+      if(parsedValues.password){
+        const salt = await bcrypt.genSalt(12);
+        const hash = await bcrypt.hash(parsedValues.password, salt);
+        parsedValues.password = hash;
+      };
 
       const updated = await User.findByIdAndUpdate({ _id: user._id }, parsedValues, { new: true });
-
       res.status(201).send({
         message: "updated successfully",
         newUser: updated
@@ -90,6 +100,7 @@ class userController {
 
     } catch (error) {
       const message = (<any>error).message;
+
       if ( message === "empty") {
         res.status(401).send({
           message: "nothing sent to change"
@@ -98,7 +109,7 @@ class userController {
       };
 
       if( message === "exist"){
-        res.status(402).send({
+        res.status(405).send({
           message: "this user exist, try other name/email"
         }).end();
         return;
