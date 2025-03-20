@@ -88,6 +88,70 @@ class followController{
     };
     return;
   };
+
+  async listUserFollowing(req: Request, res: Response){
+    if (!login(res)) return;
+    const USER_ID = Number(req.params.id) || res.locals.user._id;
+    const PAGE = Number(req.params.page) || 1;
+    const followsPerPage = 3;
+
+    try{
+      const [count, following] = await Promise.all([
+        Followers.estimatedDocumentCount(),
+        Followers.find({ follower_user_id: USER_ID })
+          .skip((PAGE - 1) * followsPerPage)
+          .limit(followsPerPage)
+          .populate("follower_user_id followed_user_id", "-__v -password -role")
+          .select({ __v: 0 })
+          .exec()
+      ]);
+
+      res.status(201).send({
+        message: "following list",
+        following,
+        pages: Math.ceil(count / followsPerPage)
+      }).end();
+
+    }catch(error){
+      res.status(500).send({
+        message: "an error ocurred while fetching following list, try again later"
+      }).end();
+      console.log(error);
+    };
+    return;
+  };
+
+  async listUserFollowers(req: Request, res: Response){
+    if (!login(res)) return;
+
+    const USER_ID = Number(req.params.id) || res.locals.user._id;
+    const PAGE = Number(req.params.page) || 1;
+    const followsPerPage = 3;
+    console.log(res.locals.user)
+    try {
+      const [count, followers] = await Promise.all([
+        Followers.estimatedDocumentCount(),
+        Followers.find({ followed_user_id: USER_ID })
+          .skip((PAGE - 1) * followsPerPage)
+          .limit(followsPerPage)
+          .select({ __v: 0 })
+          .populate("follower_user_id followed_user_id", "-__v -password -role")
+          .exec(),
+      ]);
+
+      res.status(201).send({
+        message: "users following me",
+        followers,
+        pages: Math.ceil(count / followsPerPage)
+      }).end();
+
+    }catch(error){
+      res.status(500).send({
+        message: "couldn't get followers, please try again later"
+      }).end();
+    };
+    return;
+  };
 };
 
 export default new followController();
