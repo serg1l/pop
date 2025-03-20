@@ -6,7 +6,8 @@ import generateToken from "../utils/generateToken.js";
 import login from "../utils/loginRedirection.js";
 import updateVal from "../utils/updateValidation.js";
 import bcrypt from "bcryptjs";
-import { parse } from "dotenv";
+import fs from "fs/promises";
+import path from "path";
 
 class userController {
   async createUser(req: Request, res: Response) {
@@ -238,6 +239,55 @@ class userController {
     } catch (error) {
       res.status(500).send({
         message: "failed to fetch user from the database, please try later"
+      }).end();
+    };
+    return;
+  };
+
+  async updatePicture(req: Request, res: Response){
+    if (!login(res)) return;
+
+    try{
+      if (!req.file?.path) throw new Error("file");
+
+      const user = await User.findByIdAndUpdate({ _id: res.locals.user._id }, { picture: req.file.filename }, {new: true});
+      if (user === null) throw new Error("null");
+
+      res.status(201).send({
+        message: "picture updated",
+        user
+      });
+    }catch(error){
+      const message = (<any>error).message;
+
+      if(message === "file"){
+        res.status(404).send({
+          message: "empty field."
+        }).end();
+        return;
+      };
+
+      if(message === "null"){
+        res.status(404).send({
+          message: "user not found"
+        })
+        return;
+      }
+      res.status(500);
+    };
+    return
+  };
+
+  async getUserPicutre(req: Request, res: Response){
+    if (!login(res)) return;
+    const file = `./pfp/${req.params.filename}`;
+    try{
+      const filePath = await fs.stat(file);
+      if (!filePath) throw new Error("exist");
+      res.status(201).sendFile(path.resolve(file));
+    }catch(error){
+      res.status(500).send({
+        message: "an error occurred, try again"
       }).end();
     };
     return;
