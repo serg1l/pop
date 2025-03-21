@@ -5,6 +5,7 @@ import userRouter from "./routes/userRoutes.js";
 import verifyTokenAuth from "./middlewares/authMiddleware.js";
 import followController from "./controllers/followController.js";
 import followRouter from "./routes/followRoutes.js";
+import publiRouter from "./routes/publicationRoutes.js";
 
 config({ path: "./.env" });
 const PORT = process.env.PORT || 3000;
@@ -21,4 +22,5 @@ app.get("/login", (req: Request, res: Response) => {
 
 app.use("/api/user", userRouter);
 app.use("/api/follow", followRouter);
+app.use("/api/publication", publiRouter);
 app.listen(PORT, () => console.log(`listening on port ${PORT}`));

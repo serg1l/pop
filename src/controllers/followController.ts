@@ -3,6 +3,7 @@ import Followers, { IFollow } from "../models/FollowModel.js";
 import login from "../utils/loginRedirection.js";
 import User from "../models/UserModel.js";
 import FollowModel from "../models/FollowModel.js";
+import getAllUserFollows from "../utils/getUserFollows.js";
 
 class followController{
   async followUser(req: Request ,res: Response){
@@ -127,7 +128,7 @@ class followController{
     const USER_ID = Number(req.params.id) || res.locals.user._id;
     const PAGE = Number(req.params.page) || 1;
     const followsPerPage = 3;
-    console.log(res.locals.user)
+
     try {
       const [count, followers] = await Promise.all([
         Followers.estimatedDocumentCount(),
@@ -139,10 +140,12 @@ class followController{
           .exec(),
       ]);
 
+      const total = await getAllUserFollows(USER_ID);
       res.status(201).send({
         message: "users following me",
         followers,
-        pages: Math.ceil(count / followsPerPage)
+        pages: Math.ceil(count / followsPerPage),
+        total
       }).end();
 
     }catch(error){

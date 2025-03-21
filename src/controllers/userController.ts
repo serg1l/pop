@@ -189,7 +189,7 @@ class userController {
     if (!login(res)) return;
 
     try {
-      const id = req.params.id;
+      const id = Number(req.params.id) || res.locals.user._id;
       const user = await User.findById(id)
         .select({
           password: 0,

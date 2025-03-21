@@ -5,7 +5,7 @@ import upload from "../middlewares/uplaodPicture.js";
 const userRouter = Router();
 
 userRouter.get("/users/:page?", verifyTokenAuth, userController.listUsers);
-userRouter.get("/me/:id", verifyTokenAuth, userController.getMyUser);
+userRouter.get("/me/:id?", verifyTokenAuth, userController.getMyUser);
 userRouter.get("/pfp/:filename", verifyTokenAuth, userController.getUserPicutre);
 userRouter.post("/" ,userController.createUser);
 userRouter.post("/login", verifyTokenAuth, userController.loginUser);
