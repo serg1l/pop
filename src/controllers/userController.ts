@@ -68,13 +68,11 @@ class userController {
     try {
       const userId = res.locals.user._id;
 
-      // Get user data before deletion to access profile picture
       const user = await User.findById(userId);
       if (!user) {
         throw new Error("user_not_found");
       }
 
-      // Delete user profile picture if it's not the default
       if (user.picture && user.picture !== "default.png") {
         try {
           const picturePath = path.resolve(`./pfp/${user.picture}`);
@@ -85,10 +83,8 @@ class userController {
         }
       }
 
-      // Delete all publications by the user
       await PublicationModel.deleteMany({ user_id: userId });
 
-      // Delete all follow relationships where user is either follower or followed
       await FollowModel.deleteMany({
         $or: [
           { follower_user_id: userId },
@@ -96,7 +92,6 @@ class userController {
         ]
       });
 
-      // Delete the user
       await User.findByIdAndDelete(userId);
 
       res.status(200).json({
