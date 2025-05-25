@@ -11,6 +11,6 @@ userRouter.post("/" ,userController.createUser);
 userRouter.post("/login", verifyTokenAuth, userController.loginUser);
 userRouter.post("/upload", verifyTokenAuth, upload, userController.updatePicture);
 userRouter.patch("/", verifyTokenAuth, userController.updateUser);
-userRouter.delete("/", verifyTokenAuth);
+userRouter.delete("/", verifyTokenAuth, userController.deleteUser);
 
 export default userRouter;

@@ -8,6 +8,8 @@ import updateVal from "../utils/updateValidation.js";
 import bcrypt from "bcryptjs";
 import fs from "fs/promises";
 import path from "path";
+import PublicationModel from "../models/PublicationModel.js";
+import FollowModel from "../models/FollowModel.js";
 
 class userController {
   async createUser(req: Request, res: Response) {
@@ -60,15 +62,62 @@ class userController {
     return;
   };
 
-  async deleteUser(req: Request, res: Response) {
+  async deleteUser(_req: Request, res: Response) {
     if (!login(res)) return;
 
     try {
+      const userId = res.locals.user._id;
+
+      // Get user data before deletion to access profile picture
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error("user_not_found");
+      }
+
+      // Delete user profile picture if it's not the default
+      if (user.picture && user.picture !== "default.png") {
+        try {
+          const picturePath = path.resolve(`./pfp/${user.picture}`);
+          await fs.unlink(picturePath);
+        } catch (fileError) {
+          // Log error but don't stop the deletion process
+          console.log(`Warning: Could not delete profile picture ${user.picture}:`, fileError);
+        }
+      }
+
+      // Delete all publications by the user
+      await PublicationModel.deleteMany({ user_id: userId });
+
+      // Delete all follow relationships where user is either follower or followed
+      await FollowModel.deleteMany({
+        $or: [
+          { follower_user_id: userId },
+          { followed_user_id: userId }
+        ]
+      });
+
+      // Delete the user
+      await User.findByIdAndDelete(userId);
+
+      res.status(200).json({
+        message: "User and all associated data deleted successfully"
+      });
 
     } catch (error) {
+      const message = (<any>error).message;
 
-    };
+      if (message === "user_not_found") {
+        res.status(404).json({
+          message: "User not found"
+        });
+        return;
+      }
 
+      res.status(500).json({
+        message: "Error deleting user, please try again later"
+      });
+      console.log(error);
+    }
   };
 
   async updateUser(req: Request, res: Response) {

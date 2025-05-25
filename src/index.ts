@@ -2,8 +2,6 @@ import express, { Request, Response } from "express";
 import { config } from "dotenv";
 import connection from "./config/dbConnection.js";
 import userRouter from "./routes/userRoutes.js";
-import verifyTokenAuth from "./middlewares/authMiddleware.js";
-import followController from "./controllers/followController.js";
 import followRouter from "./routes/followRoutes.js";
 import publiRouter from "./routes/publicationRoutes.js";
 
